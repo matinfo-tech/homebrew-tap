@@ -7,14 +7,23 @@ on:
     - cron: "23 6 * * *"
   workflow_dispatch:
 
-permissions:
-  contents: write
+permissions: {}
+
+# One bump at a time: two runs racing would push conflicting commits.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   bump:
+    name: bump
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # commits and pushes the updated formula
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true # the Commit step pushes with this token
       - name: Update formula from PyPI
         run: |
           python3 - <<'PY'
